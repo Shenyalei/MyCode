@@ -1,2 +1,2 @@
-# Snippts
+# MyCode
 some game server utils
