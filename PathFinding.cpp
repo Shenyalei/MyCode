@@ -1,7 +1,4 @@
-#include <vector>
-#include <list>
-#include <functional>
-#include <algorithm>
+#include "stdafx.h"
 #include "PathFinding.h"
 
 #define MAX_MAP_WIDTH 300

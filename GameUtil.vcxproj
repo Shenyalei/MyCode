@@ -88,6 +88,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PrecompiledHeader>Use</PrecompiledHeader>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -98,13 +99,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HRTimer.cpp" />
     <ClCompile Include="PathFinding.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HRTimer.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="PathFinding.h" />
     <ClInclude Include="RingBuffer.hpp" />
     <ClInclude Include="RingBuffer2.hpp" />
+    <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

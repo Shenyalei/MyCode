@@ -1,5 +1,7 @@
 //ring buffer
 //for one producer and one consumer
+#pragma once
+#include "stdafx.h"
 #define MAX_BUFFER_SIZE 1024
 
 template<class T>

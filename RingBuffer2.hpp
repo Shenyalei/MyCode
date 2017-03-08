@@ -1,7 +1,7 @@
 //lock free ring buffer 
 //for multi producer and multi consumer
-
-#include <windows.h>
+#pragma once
+#include "stdafx.h"
 
 template<class T>
 class Buffer2 {

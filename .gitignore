@@ -42,5 +42,6 @@ Network Trash Folder
 Temporary Items
 .apdisk
 .vs/GameUtil/v14/.suo
-*.db
 GameUtil.VC.VC.opendb
+Debug/*
+GameUtil.VC.db
