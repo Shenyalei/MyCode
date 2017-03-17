@@ -100,15 +100,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HRTimer.cpp" />
-    <ClCompile Include="PathFinding.cpp" />
+    <ClCompile Include="Map.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="PathFinder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HRTimer.h" />
     <ClInclude Include="Map.h" />
-    <ClInclude Include="PathFinding.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="PathFinder.h" />
     <ClInclude Include="RingBuffer.hpp" />
     <ClInclude Include="RingBuffer2.hpp" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

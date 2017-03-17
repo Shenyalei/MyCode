@@ -2,14 +2,20 @@
 //for one producer and one consumer
 #pragma once
 #include "stdafx.h"
-#define MAX_BUFFER_SIZE 1024
 
 template<class T>
-class Buffer2
+class Buffer
 {
 public:
-	Buffer2()
+	Buffer(int size)
 	{
+		int s = 1;
+		while (s < size)
+		{
+			s * = 2;
+		}
+		mCapacity = s;
+		mData = new (*T)[mCapacity];
 		mWriteCnt = 0;
 		mReadCnt = 0;
 	};
@@ -31,11 +37,11 @@ public:
 private:
 	int ReadPos()
 	{
-		return mReadCnt & (MAX_BUFFER_SIZE-1);
+		return mReadCnt & (mCapacity -1);
 	}
 	int WritePos()
 	{
-		return mWriteCnt & (MAX_BUFFER_SIZE-1);
+		return mWriteCnt & (mCapacity -1);
 	}
 	int Size()
 	{
@@ -47,10 +53,11 @@ private:
 	}
 	bool Full()
 	{
-		return Size() == MAX_BUFFER_SIZE;
+		return Size() == mCapacity;
 	}
 
-	T* mData[MAX_BUFFER_SIZE];
+	T* mData;
+	int mCapacity;
 	volatile unsigned int mWriteCnt;
 	volatile unsigned int mReadCnt;
 };

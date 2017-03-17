@@ -1,14 +1,14 @@
 #include "stdafx.h"
-#include "PathFinding.h"
+#include "PathFinder.h"
 
 #define MAX_MAP_WIDTH 300
 #define MAX_MAP_HEIGHT 300
 #define MAX_LOOP_TIMES 1000 
 
-PathFinding::PathFinding()
+PathFinder::PathFinder()
 {
 	mMap = nullptr;
-	mMinHeap = [this](MapCellPos& first, MapCellPos& second) {
+	mMinHeap = [this](CellPos& first, CellPos& second) {
 		return mMapInfo[first.x][first.y].f > mMapInfo[second.x][second.y].f;
 	};
 	//allocate space
@@ -21,16 +21,16 @@ PathFinding::PathFinding()
 	mModify.reserve(MAX_LOOP_TIMES * 8);
 }
 
-bool PathFinding::InitMap(CMap* map, const MapPos& src, const MapPos& dst)
+bool PathFinder::InitMap(Map* map, const MapPos& src, const MapPos& dst)
 {
 	int mapWidth = map->Width();
 	int mapHeight = map->Height();
 	if (mapWidth > MAX_MAP_WIDTH || mapHeight > MAX_MAP_HEIGHT)
 	{
-		printf("error : map too big , id:%d width:%d height:%d\n", map->MapID(), mapWidth, mapHeight);
+		printf("error : map too big , id:%d width:%d height:%d\n", map->ID(), mapWidth, mapHeight);
 		return false;
 	}
-	if (map->IsCellBlock(src.x, src.y)|| map->IsCellBlock(dst.x, dst.y))
+	if (map->IsBlock(src.x, src.y)|| map->IsBlock(dst.x, dst.y))
 		return false;
 	//clear old data
 	for (auto m : mModify)
@@ -42,13 +42,13 @@ bool PathFinding::InitMap(CMap* map, const MapPos& src, const MapPos& dst)
 	mOpenlist.clear();
 	mSrc = src;
 	mDst = dst;
-	mSrcCell = (MapCellPos)src;
-	mDstCell = (MapCellPos)dst;
+	mSrcCell = (CellPos)src;
+	mDstCell = (CellPos)dst;
 	mMap = map;
 	return true;
 }
 
-bool PathFinding::GetPath(CMap* map, const MapPos& src, const MapPos& dst, std::vector<MapPos>& path)
+bool PathFinder::GetPath(Map* map, const MapPos& src, const MapPos& dst, std::vector<MapPos>& path)
 {
 	if (src == dst)
 		return false;
@@ -60,18 +60,18 @@ bool PathFinding::GetPath(CMap* map, const MapPos& src, const MapPos& dst, std::
 	return GetAstarPath(map, src, dst, path);
 }
 
-bool PathFinding::GetAstarPath(CMap* map, const MapPos& src, const MapPos& dst, std::vector<MapPos>& path)
+bool PathFinder::GetAstarPath(Map* map, const MapPos& src, const MapPos& dst, std::vector<MapPos>& path)
 {
 	if (!InitMap(map, src, dst))
 		return false;
-	AddOpenList(mSrcCell, 0, MapCellPos(0, 0));
+	AddOpenList(mSrcCell, 0, CellPos(0, 0));
 	bool findPath = false;
 	int loop = MAX_LOOP_TIMES;
 	while (--loop)
 	{
 		if (mOpenlist.empty())//fail
 			break;
-		MapCellPos oldPos = PopOpenList();
+		CellPos oldPos = PopOpenList();
 		if (oldPos == mDstCell)//success
 		{
 			findPath = true;
@@ -83,8 +83,8 @@ bool PathFinding::GetAstarPath(CMap* map, const MapPos& src, const MapPos& dst, 
 			{
 				if (i == 0 && j == 0)
 					continue;
-				MapCellPos newPos(oldPos.x + i, oldPos.y + j);
-				if (map->IsCellBlock(newPos.x, newPos.y))
+				CellPos newPos(oldPos.x + i, oldPos.y + j);
+				if (map->IsBlock(newPos.x, newPos.y))
 					continue;
 				PointInfo& oldInfo = mMapInfo[oldPos.x][oldPos.y];
 				float g = 1.f;
@@ -101,12 +101,12 @@ bool PathFinding::GetAstarPath(CMap* map, const MapPos& src, const MapPos& dst, 
 	}
 	else
 	{
-		printf("error:not find path , mapid:%d src(%f,%f) dst(%f,%f)\n", map->MapID(), src.x, src.y, dst.x, dst.y);
+		printf("error:not find path , mapid:%d src(%f,%f) dst(%f,%f)\n", map->ID(), src.x, src.y, dst.x, dst.y);
 		return false;
 	}
 }
 
-void PathFinding::AddOpenList(const MapCellPos& pos, float g, const MapCellPos& parent)
+void PathFinder::AddOpenList(const CellPos& pos, float g, const CellPos& parent)
 {
 	PointInfo& info = mMapInfo[pos.x][pos.y];
 	if (info.state == PS_NONE)//new
@@ -129,27 +129,27 @@ void PathFinding::AddOpenList(const MapCellPos& pos, float g, const MapCellPos& 
 	}
 }
 
-MapCellPos PathFinding::PopOpenList()
+CellPos PathFinder::PopOpenList()
 {
 	std::pop_heap(mOpenlist.begin(), mOpenlist.end(), mMinHeap);
-	MapCellPos ret = mOpenlist.back();
+	CellPos ret = mOpenlist.back();
 	mOpenlist.pop_back();
 	return ret;
 }
 
-int PathFinding::CalcH(const MapCellPos& src, const MapCellPos& dst)
+int PathFinder::CalcH(const CellPos& src, const CellPos& dst)
 {
 	return std::abs(dst.x - src.x) + std::abs(dst.y - src.y);
 }
 
-std::vector<MapPos> PathFinding::GetPathVec()
+std::vector<MapPos> PathFinder::GetPathVec()
 {
 	std::vector<MapPos> ret;
 
 	//get path
 	std::list<MapPos> path;
 	path.push_front(mDst);
-	MapCellPos cell = mMapInfo[mDstCell.x][mDstCell.y].parent;
+	CellPos cell = mMapInfo[mDstCell.x][mDstCell.y].parent;
 	while (cell != mSrcCell)
 	{
 		path.emplace_front(cell.ToPixX(), cell.ToPixY());
@@ -166,7 +166,7 @@ std::vector<MapPos> PathFinding::GetPathVec()
 		it1 = path.begin();
 		for (; it3 != path.end(); ++it3)
 		{
-			if (util_is_line(it1->x, it1->y, it2->x, it2->y, it3->x, it3->y)
+			if (IsLine(it1->x, it1->y, it2->x, it2->y, it3->x, it3->y)
 				|| mMap->CanGoStraight(*it1, *it3))
 			{
 				path.erase(it2);
