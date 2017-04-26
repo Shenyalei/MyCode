@@ -19,12 +19,13 @@ public:
 		mWriteCnt = 0;
 		mReadCnt = 0;
 	};
-	void push(T* data)
+	bool push(T* data)
 	{
 		if (Full())
-			return;
+			return false;
 		mData[WritePos()] = data;
 		++mWriteCnt;
+		return true;
 	}
 	T* pop()
 	{
