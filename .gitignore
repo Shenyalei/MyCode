@@ -41,7 +41,8 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-.vs/GameUtil/v14/.suo
-GameUtil.VC.VC.opendb
-Debug/*
-GameUtil.VC.db
+.vs/*
+x64/*
+Framework/x64/*
+Network/x64/*
+Share/x64/*
