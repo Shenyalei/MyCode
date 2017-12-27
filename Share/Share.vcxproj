@@ -118,7 +118,8 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="HRTimer.h" />
-    <ClInclude Include="RingBuffer.hpp" />
+    <ClInclude Include="RingBuffer.h" />
+    <ClInclude Include="Singleton.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HRTimer.cpp" />

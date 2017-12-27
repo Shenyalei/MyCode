@@ -6,12 +6,17 @@
 //STL
 #include <vector>
 #include <memory>
-
+#include <thread>
+#include <unordered_map>
 
 
 //项目文件
 #include "Define.h"
+#include "Singleton.h"
 
+
+//windows
+#include <windows.h>
 
 
 

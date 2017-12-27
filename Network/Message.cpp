@@ -3,9 +3,19 @@
 
 Message::Message(WORD opcode /*= 0*/, ::google::protobuf::Message* msg /*= nullptr*/)
 {
-	SetOpcode(opcode);
+	m_bodyLen = 0;
+	m_opcode = opcode;
 	if (msg)
 		Serialize(*msg);
+}
+
+Message::Message(const Message & other)
+{
+	if (this == &other)
+		return;
+	m_opcode = other.Opcode();
+	m_bodyLen = other.BodyLen();
+	memcpy(m_data,other.Data(),other.Length());
 }
 
 void Message::SetData(const char * data, WORD len)
@@ -31,13 +41,13 @@ bool Message::Deserialize(::google::protobuf::Message& msg)
 
 void Message::DecodeHeader()
 {
-	DWORD header = *(DWORD*)m_data;
+	UINT header = *(UINT*)m_data;
 	m_bodyLen = header >> 16;
 	m_opcode = (WORD)header;
 }
 
 void Message::EncodeHeader()
 {
-	DWORD header = m_bodyLen << 16 | m_opcode;
+	UINT header = m_bodyLen << 16 | m_opcode;
 	memcpy(m_data, &header, HEADER_LEN);
 }

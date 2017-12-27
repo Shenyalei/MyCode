@@ -21,10 +21,13 @@
     <ClInclude Include="Define.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="RingBuffer.hpp">
+    <ClInclude Include="HRTimer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HRTimer.h">
+    <ClInclude Include="Singleton.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="RingBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -119,10 +119,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Connection.h" />
+    <ClInclude Include="IOThreadM.h" />
     <ClInclude Include="Message.h" />
+    <ClInclude Include="Session.h" />
+    <ClInclude Include="ConnectionM.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Connection.cpp" />
+    <ClCompile Include="IOThreadM.cpp" />
     <ClCompile Include="Message.cpp" />
+    <ClCompile Include="Session.cpp" />
+    <ClCompile Include="ConnectionM.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

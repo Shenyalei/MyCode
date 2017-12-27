@@ -1,5 +1,4 @@
-//#include "Common.h"
-#include <windows.h>
+#include "Common.h"
 #include "HRTimer.h"
 #include <stdio.h>
 

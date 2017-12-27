@@ -6,7 +6,7 @@
 
 typedef unsigned char BYTE;
 typedef unsigned short WORD;
-typedef unsigned int DWORD;
+typedef unsigned int UINT;
 typedef unsigned long long QWORD;
 
 
