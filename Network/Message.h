@@ -7,6 +7,7 @@
 #define HEADER_LEN 4
 #define MAX_BODY_LEN  (MAX_LENGTH - HEADER_LEN)
 
+class Connection;
 class Message {
 public:
 
@@ -14,7 +15,7 @@ public:
 	Message(const Message& other);
 	~Message() {};
 
-
+	Message& operator=(const Message& other);
 	char* Body() { return m_data + HEADER_LEN; }
 
 	char* Data() { return m_data; }
@@ -38,5 +39,8 @@ private:
 	WORD m_bodyLen;
 	char m_data[MAX_LENGTH];
 };
+typedef std::function<bool(Connection&, Message&)> MSG_HANDLE;
+extern void DefineMsgHandle(WORD opcode,const MSG_HANDLE& handle);
+extern MSG_HANDLE& GetMsgHandle(WORD opcode);
 
 #endif 

@@ -15,8 +15,10 @@ public:
 	void SendMsg(const Message& msg);
 	void RecvMsg(Message* msg);
 	void ProcessMsg();
+
 	void PostSend();
 	void PostRecv();
+
 	void OnSend(int num);
 	void OnRecv(int num);
 private:
@@ -28,7 +30,10 @@ private:
 	Message* m_sendMsg;
 	WORD m_recvPos;
 	Message* m_recvMsg;
+
 	SOCKET m_socket;
+	std::string m_ip;
+	WORD m_port;
 };
 
 #endif // NETWORK_CONNECTION_

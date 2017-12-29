@@ -15,11 +15,11 @@ public:
 			s *= 2;
 		}
 		mCapacity = s;
-		mData = new T*[mCapacity];
+		mData = new T[mCapacity];
 		mWriteCnt = 0;
 		mReadCnt = 0;
 	};
-	bool push(T* data)
+	bool push(const T& data)
 	{
 		if (Full())
 			return false;
@@ -27,13 +27,23 @@ public:
 		++mWriteCnt;
 		return true;
 	}
-	T* pop()
+	bool push(T&& data)
+	{
+		if (Full())
+			return false;
+		mData[WritePos()] = std::move(data);
+		++mWriteCnt;
+		return true;
+	}
+	void pop()
 	{
 		if (Empty())
-			return nullptr;
-		T* ret = mData[ReadPos()];
+			return ;
 		++mReadCnt;
-		return ret;
+	}
+	T& back()
+	{
+		return mData[ReadPos()];
 	}
 	int Size()
 	{
@@ -57,7 +67,7 @@ private:
 		return mWriteCnt & (mCapacity - 1);
 	}
 
-	T** mData;
+	T* mData;
 	int mCapacity;
 	volatile unsigned int mWriteCnt;
 	volatile unsigned int mReadCnt;
@@ -76,19 +86,20 @@ public:
 			s *= 2;
 		}
 		mCapacity = s;
-		mData = new (T*)[mCapacity];
+		mData = new T[mCapacity];
 	}
-	bool push(T* data);
-	bool pop(T* data);
+	bool push(const T& data);
+	bool push(T&& data);
+	bool pop(T& data);
 private:
-	T** mData;
+	T* mData;
 	int mWriteCnt;
 	int mReadCnt;
 	int mCapacity;
 };
 
 template <class T>
-bool RingBuffer2<T>::push(T* data)
+bool RingBuffer2<T>::push(const T& data)
 {
 	int in = 0;
 	int out = 0;
@@ -109,7 +120,28 @@ bool RingBuffer2<T>::push(T* data)
 }
 
 template <class T>
-bool RingBuffer2<T>::pop(T* data)
+bool RingBuffer2<T>::push(T&& data)
+{
+	int in = 0;
+	int out = 0;
+
+	do {
+		in = mWriteCnt;
+		out = mReadCnt;
+
+		if (in - out == mCapacity) {
+			return false;
+		}
+
+	} while (!InterlockedCompareExchange(&mWriteCnt, in + 1, in))
+
+		mData[in&(mCapacity - 1)] = std::move(data);
+
+	return true;
+}
+
+template <class T>
+bool RingBuffer2<T>::pop(T& data)
 {
 	int in = 0;
 	int out = 0;

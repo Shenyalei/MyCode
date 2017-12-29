@@ -10,6 +10,7 @@
 
 Connection::Connection(SOCKET _socket) :m_recvQueue(RECV_MSG_QUEUE_SIZE),m_sendQueue(SEND_MSG_QUEUE_SIZE)
 {
+	m_port = 0;
 	m_socket = _socket;
 	m_sendMsg = nullptr;
 	m_sendPos = 0;
@@ -29,8 +30,7 @@ Connection::~Connection()
 
 void Connection::SendMsg(const Message& msg)
 {
-	Message* pMsg = new Message(msg);
-	if (!m_sendQueue.push(pMsg))
+	if (!m_sendQueue.push(msg))
 	{
 		printf("send queue full\n");
 		return;
@@ -43,7 +43,7 @@ void Connection::SendMsg(const Message& msg)
 
 void Connection::RecvMsg(Message* msg)
 {
-	if (!m_recvQueue.push(msg))
+	if (!m_recvQueue.push(*msg))
 	{
 		printf("m_recvQueue full\n");
 	}
@@ -51,12 +51,16 @@ void Connection::RecvMsg(Message* msg)
 
 void Connection::ProcessMsg()
 {
-	Message* msg = m_recvQueue.pop();
-	while (msg)
+	while (!m_recvQueue.Empty())
 	{
+		Message msg = m_recvQueue.back();
+		m_recvQueue.pop();
 		// do msg
-		delete msg;
-		msg = m_recvQueue.pop();
+		MSG_HANDLE handle = GetMsgHandle(msg.Opcode());
+		if (handle)
+		{
+			handle(*this, msg);
+		}
 	}
 }
 
@@ -64,9 +68,9 @@ void Connection::PostSend()
 {
 	if (m_sendMsg == nullptr)//从队列里取一个消息
 	{
-		m_sendMsg = m_sendQueue.pop();
-		if (m_sendMsg == nullptr)
+		if (m_sendQueue.Empty())
 			return;
+		m_sendMsg = &m_sendQueue.back();
 	}
 	WSABUF wsabuf;
 	wsabuf.buf = m_sendMsg->Data() + m_sendPos;
@@ -108,6 +112,7 @@ void Connection::OnRecv(int num)
 	else if (m_recvMsg->BodyLen() && m_recvPos >= m_recvMsg->Length())
 	{
 		RecvMsg(m_recvMsg);
+		delete m_recvMsg;
 		m_recvMsg = nullptr;
 		m_recvPos = 0;
 	}

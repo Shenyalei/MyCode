@@ -12,6 +12,11 @@
 
 ActionBase::ActionBase() : OVERLAPPED()
 {
+	Init();
+}
+
+void ActionBase::Init()
+{
 	Internal = 0;
 	InternalHigh = 0;
 	Offset = 0;
@@ -21,13 +26,19 @@ ActionBase::ActionBase() : OVERLAPPED()
 
 AcceptAction::AcceptAction()
 {
+}
+
+void AcceptAction::Init()
+{
+	ActionBase::Init();
 	acceptSocket = 0;
 }
+
 bool AcceptAction::OnComplete(DWORD num)
 {
 	IOThreadM::GetInstance().AddSocket(acceptSocket);
 	ConnectionM::GetInstance().AddConnection(acceptSocket);
-	AcceptAction();
+	Init();
 	IOThreadM::GetInstance().PostAccept(this);
 	return true;
 }
@@ -75,7 +86,7 @@ bool IOThreadM::Start()
 	return true;
 }
 
-bool IOThreadM::Listen(DWORD ip,WORD port)
+bool IOThreadM::Listen(const std::string& ip,WORD port)
 {
 	m_listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -83,7 +94,7 @@ bool IOThreadM::Listen(DWORD ip,WORD port)
 
 	sockaddr_in service;
 	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = ip;
+	service.sin_addr.s_addr = inet_addr(ip.c_str());
 	service.sin_port = port;
 	bind(m_listenSocket, (sockaddr*)&service, sizeof(service));
 
