@@ -41,8 +41,8 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
-.vs/*
-x64/*
-Framework/x64/*
-Network/x64/*
-Share/x64/*
+.vs/
+Framework/x64/
+Network/x64/
+Share/x64/
+x64/
