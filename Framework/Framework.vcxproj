@@ -126,6 +126,11 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Share\Share.vcxproj">
+      <Project>{24c6ca4d-9534-414f-a590-1b47d4343f3e}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

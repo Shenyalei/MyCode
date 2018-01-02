@@ -16,11 +16,6 @@ void DefineMsgHandle(WORD opcode,const MSG_HANDLE& handle)
 
 MSG_HANDLE& GetMsgHandle(WORD opcode)
 {
-	if (opcode >= MAX_MSG_HANDLE)
-	{
-		printf("opcode beyond max\n");
-		return;
-	}
 	return g_msgHandleTable[opcode];
 }
 

@@ -1,5 +1,6 @@
 #include <WinSock2.h>
 #include <mswsock.h>
+#include <WS2tcpip.h>
 #include "Common.h"
 #include "IOThreadM.h"
 #include "Connection.h"
@@ -94,7 +95,8 @@ bool IOThreadM::Listen(const std::string& ip,WORD port)
 
 	sockaddr_in service;
 	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr(ip.c_str());
+	inet_pton(AF_INET, ip.c_str(), (void*)&service.sin_addr);
+	//service.sin_addr.s_addr = inet_addr(ip.c_str());
 	service.sin_port = port;
 	bind(m_listenSocket, (sockaddr*)&service, sizeof(service));
 
