@@ -44,6 +44,22 @@ bool AcceptAction::OnComplete(DWORD num)
 	return true;
 }
 
+ConnectAction::ConnectAction(SOCKET socket)
+{
+	connSocket = socket;
+}
+
+ConnectAction::~ConnectAction()
+{
+	delete this;
+}
+
+bool ConnectAction::OnComplete(DWORD num)
+{
+	ConnectionM::GetInstance().AddConnection(connSocket);
+	return true;
+}
+
 bool SendAction::OnComplete(DWORD num)
 {
 	conn->OnSend(num);
@@ -64,10 +80,16 @@ IOThreadM::IOThreadM()
 
 IOThreadM::~IOThreadM()
 {
+	for (auto&& thread : m_workerThreads)
+	{
+		thread.join();
+	}
 }
 
 bool IOThreadM::Start()
 {
+	WSADATA wsaData; WSAStartup(MAKEWORD(2, 2), &wsaData);
+
 	m_IOCP = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 	for (int i = 0 ; i < IO_THREAD_NUM;++i)
 	{
@@ -97,7 +119,7 @@ bool IOThreadM::Listen(const std::string& ip,WORD port)
 	service.sin_family = AF_INET;
 	inet_pton(AF_INET, ip.c_str(), (void*)&service.sin_addr);
 	//service.sin_addr.s_addr = inet_addr(ip.c_str());
-	service.sin_port = port;
+	service.sin_port = htons(port);
 	bind(m_listenSocket, (sockaddr*)&service, sizeof(service));
 
 	listen(m_listenSocket, BACKLOG_NUM);
@@ -106,6 +128,61 @@ bool IOThreadM::Listen(const std::string& ip,WORD port)
 
 	PostAccept(action);
 	return true;
+}
+
+bool IOThreadM::Connect(const std::string& ip, WORD port)
+{
+	SOCKET connSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+	// 以下的绑定很重要，也是容易漏掉的。（如果少了绑定，在 ConnextEx 时将得到错误代码：10022 — 提供了一个无效的参数
+	sockaddr_in local_addr;
+	ZeroMemory(&local_addr, sizeof(sockaddr_in));
+	local_addr.sin_family = AF_INET;
+	bind(connSocket, (sockaddr *)(&local_addr), sizeof(sockaddr_in));
+
+	AddSocket(connSocket);
+
+	LPFN_CONNECTEX lpfnConnectEx = NULL;
+	DWORD dwBytes = 0;
+	GUID GuidConnectEx = WSAID_CONNECTEX;
+
+	WSAIoctl(connSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,&GuidConnectEx, sizeof(GuidConnectEx),&lpfnConnectEx, sizeof(lpfnConnectEx), &dwBytes, 0, 0);
+
+	sockaddr_in addrPeer;
+	ZeroMemory(&addrPeer, sizeof(sockaddr_in));
+	addrPeer.sin_family = AF_INET;
+	addrPeer.sin_addr.s_addr = inet_addr(ip.c_str());
+	addrPeer.sin_port = htons(port);
+
+	int nLen = sizeof(addrPeer);
+	PVOID lpSendBuffer = NULL;
+	DWORD dwSendDataLength = 0;
+	DWORD dwBytesSent = 0;
+
+	ConnectAction* action = new ConnectAction(connSocket);
+	BOOL bResult = lpfnConnectEx(connSocket,
+		(sockaddr *)&addrPeer,  // [in] 对方地址
+		nLen,               // [in] 对方地址长度
+		lpSendBuffer,       // [in] 连接后要发送的内容，这里不用
+		dwSendDataLength,   // [in] 发送内容的字节数 ，这里不用
+		&dwBytesSent,       // [out] 发送了多少个字节，这里不用
+		action); // [in] 这东西复杂，下一篇有详解
+
+	if (!bResult)      // 返回值处理
+	{
+/*
+		if (WSAGetLastError() != ERROR_IO_PENDING)   // 调用失败
+		{
+			TRACE(TEXT("ConnextEx error: %d/n"), WSAGetLastError());
+			return FALSE;
+		}
+		else;// 操作未决（正在进行中 … ）
+		{
+			TRACE0("WSAGetLastError() == ERROR_IO_PENDING/n");// 操作正在进行中
+		}*/
+	}
+
+	return TRUE;
 }
 
 void IOThreadM::AddSocket(SOCKET socket)
@@ -127,6 +204,4 @@ void IOThreadM::PostAccept(AcceptAction* action)
 
 	lpfnAcceptEx(m_listenSocket, action->acceptSocket, nullptr,0,0,0,&bytes, action);
 }
-
-
 

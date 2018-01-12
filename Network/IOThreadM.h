@@ -7,6 +7,7 @@ class ActionBase : public OVERLAPPED
 {
 public:
 	ActionBase();
+	virtual ~ActionBase() {};
 	virtual void Init();
 	virtual bool OnComplete(DWORD num) = 0;
 };
@@ -18,6 +19,15 @@ public:
 	void Init() override;
 	bool OnComplete(DWORD num) override;
 	SOCKET acceptSocket;
+};
+
+class ConnectAction :public ActionBase
+{
+public:
+	ConnectAction(SOCKET socket);
+	~ConnectAction() override;
+	bool OnComplete(DWORD num) override;
+	SOCKET connSocket;
 };
 
 class RecvAction :public ActionBase
@@ -44,6 +54,7 @@ public:
 	~IOThreadM();
 	bool Start();
 	bool Listen(const std::string& ip,WORD port);
+	bool Connect(const std::string& ip, WORD port);
 	void AddSocket(SOCKET socket);
 	void PostAccept(AcceptAction* action);
 private:

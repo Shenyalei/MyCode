@@ -10,7 +10,7 @@ class RecvAction;
 class Connection
 {
 public:
-	Connection(SOCKET _socket);
+	Connection(SOCKET _socket = 0);
 	virtual ~Connection();
 	void SendMsg(const Message& msg);
 	void RecvMsg(Message* msg);
@@ -21,6 +21,9 @@ public:
 
 	void OnSend(int num);
 	void OnRecv(int num);
+
+	std::string m_ip;
+	WORD m_port;
 private:
 	RingBuffer<Message> m_recvQueue;
 	RingBuffer<Message> m_sendQueue;
@@ -32,8 +35,6 @@ private:
 	Message* m_recvMsg;
 
 	SOCKET m_socket;
-	std::string m_ip;
-	WORD m_port;
 };
 
 #endif // NETWORK_CONNECTION_
