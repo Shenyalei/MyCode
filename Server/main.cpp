@@ -5,37 +5,35 @@
 #include "Connection.h"
 #include "ConnectionM.h"
 
-#define LOCAL_IP "127.0.0.1"
+#define LOCAL_IP "0.0.0.0"
 #define LISTEN_PORT 10001
+
 enum OpCode
 {
-	OP_PRINT,
+	OP_NONE = 0,
+	OP_PRINT = 1,
 };
 
 void InitMsg()
 {
 	DefineMsgHandle(OP_PRINT, [](Connection& conn, Message& msg) {
-		printf("okkk\n");
+		printf("server get msg OP_PRINT\n");
 		return true; 
 	});
 }
 
 int main(int argc, char** argv)
 {
+	printf("Start Server:\n");
 	InitMsg();
 	IOThreadM::GetInstance().Start();
 	IOThreadM::GetInstance().Listen(LOCAL_IP, LISTEN_PORT);
-	//start client
-	IOThreadM::GetInstance().Connect(LOCAL_IP,LISTEN_PORT);
 
-	Sleep(1000);
-	Connection* conn = ConnectionM::GetInstance().GetConnection(LOCAL_IP);
-	if (!conn)
-		return 0;
-	//conn->SendMsg(Message(OP_PRINT));
+	printf("Server ProcessMsg\n");
 	while (1)
 	{
-		Sleep(1000);
+		Connection::ProcessMsg();
+		Sleep(5*1000);
 	}
 	return 0;
 }

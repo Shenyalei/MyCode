@@ -19,6 +19,7 @@ public:
 	void Init() override;
 	bool OnComplete(DWORD num) override;
 	SOCKET acceptSocket;
+	char buf[64];//for local address,remote address
 };
 
 class ConnectAction :public ActionBase
@@ -55,12 +56,14 @@ public:
 	bool Start();
 	bool Listen(const std::string& ip,WORD port);
 	bool Connect(const std::string& ip, WORD port);
+	bool ConnectSync(const std::string& ip, WORD port);
 	void AddSocket(SOCKET socket);
-	void PostAccept(AcceptAction* action);
+	bool PostAccept(AcceptAction* action);
+
+	SOCKET m_listenSocket;
 private:
 	HANDLE	m_IOCP;
 	std::vector<std::thread> m_workerThreads;
-	SOCKET m_listenSocket;
 };
 
 #endif // NETWORK_IOTHREADM_

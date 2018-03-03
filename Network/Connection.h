@@ -10,11 +10,22 @@ class RecvAction;
 class Connection
 {
 public:
-	Connection(SOCKET _socket = 0);
+	struct MsgEvent
+	{
+		Connection* conn = nullptr;
+		Message* msg = nullptr;
+	};
+	Connection(const Connection&) = delete;
+	Connection& operator=(const Connection&) = delete;
+	Connection(Connection&&) = delete;
+	Connection& operator=(Connection&&) = delete;
+
+	Connection(SOCKET _socket);
 	virtual ~Connection();
+
 	void SendMsg(const Message& msg);
 	void RecvMsg(Message* msg);
-	void ProcessMsg();
+	static void ProcessMsg();
 
 	void PostSend();
 	void PostRecv();
@@ -22,10 +33,13 @@ public:
 	void OnSend(int num);
 	void OnRecv(int num);
 
+	void Close();
+
 	std::string m_ip;
 	WORD m_port;
 private:
-	RingBuffer<Message> m_recvQueue;
+	static std::mutex m_recvQueueMutex;
+	static RingBuffer<MsgEvent> m_recvQueue;
 	RingBuffer<Message> m_sendQueue;
 	SendAction* m_sendAction;
 	RecvAction* m_recvAction;

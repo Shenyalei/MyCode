@@ -33,10 +33,12 @@ void AcceptAction::Init()
 {
 	ActionBase::Init();
 	acceptSocket = 0;
+	memset(buf, 0, sizeof(buf));
 }
 
 bool AcceptAction::OnComplete(DWORD num)
 {
+	setsockopt(acceptSocket, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,(char*)&IOThreadM::GetInstance().m_listenSocket,sizeof(SOCKET));
 	IOThreadM::GetInstance().AddSocket(acceptSocket);
 	ConnectionM::GetInstance().AddConnection(acceptSocket);
 	Init();
@@ -56,6 +58,7 @@ ConnectAction::~ConnectAction()
 
 bool ConnectAction::OnComplete(DWORD num)
 {
+	setsockopt(connSocket, SOL_SOCKET, SO_UPDATE_CONNECT_CONTEXT, NULL, 0);
 	ConnectionM::GetInstance().AddConnection(connSocket);
 	return true;
 }
@@ -96,12 +99,16 @@ bool IOThreadM::Start()
 		m_workerThreads.push_back(std::thread([this]() {
 			DWORD numOfBytes = 0;
 			LPOVERLAPPED lpOverlapped;
+			QWORD key = 0;
 			while (1)
 			{
-				bool ret = GetQueuedCompletionStatus(m_IOCP, &numOfBytes, nullptr, &lpOverlapped, INFINITE);
-				if (lpOverlapped && ret)
+				bool ret = GetQueuedCompletionStatus(m_IOCP, &numOfBytes, &key, &lpOverlapped, INFINITE);
+				if (lpOverlapped)
 				{
-					((ActionBase*)lpOverlapped)->OnComplete(numOfBytes);
+					if (ret)
+						((ActionBase*)lpOverlapped)->OnComplete(numOfBytes);
+					else
+						printf("GetQueuedCompletionStatus Fail Error:%d\n", WSAGetLastError());
 				}
 			}
 		}));
@@ -115,18 +122,28 @@ bool IOThreadM::Listen(const std::string& ip,WORD port)
 
 	AddSocket(m_listenSocket);
 
+	bool reuse = true;
+	setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&reuse, sizeof(reuse));
+
 	sockaddr_in service;
 	service.sin_family = AF_INET;
-	inet_pton(AF_INET, ip.c_str(), (void*)&service.sin_addr);
-	//service.sin_addr.s_addr = inet_addr(ip.c_str());
+	service.sin_addr.s_addr = inet_addr(ip.c_str());
 	service.sin_port = htons(port);
-	bind(m_listenSocket, (sockaddr*)&service, sizeof(service));
+	if (SOCKET_ERROR == bind(m_listenSocket, (sockaddr*)&service, sizeof(service)))
+	{
+		printf("bind error:%d\n", WSAGetLastError());
+		return false;
+	}
 
-	listen(m_listenSocket, BACKLOG_NUM);
+	if (SOCKET_ERROR == listen(m_listenSocket, BACKLOG_NUM))
+	{
+		printf("listen error:%d\n", WSAGetLastError());
+		return false;
+	}
 
 	AcceptAction* action = new AcceptAction;
-
 	PostAccept(action);
+	printf("Listen IP:%s Port:%d\n", ip.c_str(), port);
 	return true;
 }
 
@@ -138,7 +155,11 @@ bool IOThreadM::Connect(const std::string& ip, WORD port)
 	sockaddr_in local_addr;
 	ZeroMemory(&local_addr, sizeof(sockaddr_in));
 	local_addr.sin_family = AF_INET;
-	bind(connSocket, (sockaddr *)(&local_addr), sizeof(sockaddr_in));
+	if (SOCKET_ERROR == bind(connSocket, (sockaddr *)(&local_addr), sizeof(sockaddr_in)))
+	{
+		printf("Bind Connect Socket Error:%d\n", WSAGetLastError());
+		return false;
+	}
 
 	AddSocket(connSocket);
 
@@ -146,7 +167,17 @@ bool IOThreadM::Connect(const std::string& ip, WORD port)
 	DWORD dwBytes = 0;
 	GUID GuidConnectEx = WSAID_CONNECTEX;
 
-	WSAIoctl(connSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,&GuidConnectEx, sizeof(GuidConnectEx),&lpfnConnectEx, sizeof(lpfnConnectEx), &dwBytes, 0, 0);
+	if (SOCKET_ERROR == WSAIoctl(connSocket,
+		SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&GuidConnectEx,
+		sizeof(GuidConnectEx),
+		&lpfnConnectEx,
+		sizeof(lpfnConnectEx),
+		&dwBytes, 0, 0))
+	{
+		printf("Get ConnectEx function pointer error:%d\n", WSAGetLastError());
+		return false;
+	}
 
 	sockaddr_in addrPeer;
 	ZeroMemory(&addrPeer, sizeof(sockaddr_in));
@@ -160,48 +191,79 @@ bool IOThreadM::Connect(const std::string& ip, WORD port)
 	DWORD dwBytesSent = 0;
 
 	ConnectAction* action = new ConnectAction(connSocket);
-	BOOL bResult = lpfnConnectEx(connSocket,
+	BOOL ret = lpfnConnectEx(connSocket,
 		(sockaddr *)&addrPeer,  // [in] 对方地址
 		nLen,               // [in] 对方地址长度
 		lpSendBuffer,       // [in] 连接后要发送的内容，这里不用
 		dwSendDataLength,   // [in] 发送内容的字节数 ，这里不用
 		&dwBytesSent,       // [out] 发送了多少个字节，这里不用
-		action); // [in] 这东西复杂，下一篇有详解
+		action);
 
-	if (!bResult)      // 返回值处理
+	if (!ret)
 	{
-/*
-		if (WSAGetLastError() != ERROR_IO_PENDING)   // 调用失败
+		if (WSAGetLastError() != ERROR_IO_PENDING) 
 		{
-			TRACE(TEXT("ConnextEx error: %d/n"), WSAGetLastError());
-			return FALSE;
+			printf("ConnectEx error: %d/n", WSAGetLastError());
+			return false;
 		}
-		else;// 操作未决（正在进行中 … ）
-		{
-			TRACE0("WSAGetLastError() == ERROR_IO_PENDING/n");// 操作正在进行中
-		}*/
 	}
+	printf("Connect IP:%s Port:%d\n", ip.c_str(), port);
+	return true;
+}
 
-	return TRUE;
+bool IOThreadM::ConnectSync(const std::string& ip, WORD port)
+{
+	SOCKET connSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	sockaddr_in addrPeer;
+	ZeroMemory(&addrPeer, sizeof(sockaddr_in));
+	addrPeer.sin_family = AF_INET;
+	addrPeer.sin_addr.s_addr = inet_addr(ip.c_str());
+	addrPeer.sin_port = htons(port);
+	if (connect(connSocket, (sockaddr*)&addrPeer, sizeof(addrPeer)) == SOCKET_ERROR)
+	{
+		printf("ConnectSync Fail Error:%d\n", WSAGetLastError());
+		closesocket(connSocket);
+		return false;
+	}
+	IOThreadM::GetInstance().AddSocket(connSocket);
+	ConnectionM::GetInstance().AddConnection(connSocket);
+	printf("ConnectSync IP:%s Port:%d\n", ip.c_str(), port);
+	return true;
 }
 
 void IOThreadM::AddSocket(SOCKET socket)
 {
-	CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket), m_IOCP,0, 0);
+	if (!CreateIoCompletionPort(reinterpret_cast<HANDLE>(socket), m_IOCP, 0, 0))
+	{
+		printf("CreateIoCompletionPort error:%d\n", WSAGetLastError());
+	}
 }
 
-void IOThreadM::PostAccept(AcceptAction* action)
+bool IOThreadM::PostAccept(AcceptAction* action)
 {
 	LPFN_ACCEPTEX lpfnAcceptEx = NULL;
 	GUID GuidAcceptEx = WSAID_ACCEPTEX;
 	DWORD bytes = 0;
-	WSAIoctl(m_listenSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+	if (SOCKET_ERROR == WSAIoctl(m_listenSocket, SIO_GET_EXTENSION_FUNCTION_POINTER,
 		&GuidAcceptEx, sizeof(GuidAcceptEx),
 		&lpfnAcceptEx, sizeof(lpfnAcceptEx),
-		&bytes, NULL, NULL);
+		&bytes, NULL, NULL))
+	{
+		printf("get acceptEx function pointer error:%d\n", WSAGetLastError());
+		return false;
+	}
 
 	action->acceptSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-	lpfnAcceptEx(m_listenSocket, action->acceptSocket, nullptr,0,0,0,&bytes, action);
+	bool ret = lpfnAcceptEx(m_listenSocket, action->acceptSocket, action->buf,0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16,&bytes, action);
+	if (!ret)
+	{
+		if (WSAGetLastError() != WSA_IO_PENDING)
+		{
+			printf("PostAccept fail,error:%d\n", WSAGetLastError());
+			return false;
+		}
+	}
+	return true;
 }
 
