@@ -57,8 +57,8 @@ bool Message::Serialize(::google::protobuf::Message& msg)
 	return true;
 }
 
-bool Message::Deserialize(::google::protobuf::Message& msg)
+bool Message::Deserialize(::google::protobuf::Message* msg)
 {
-	return msg.ParseFromArray(Body(), BodyLen());
+	return msg->ParseFromArray(Body(), BodyLen());
 }
 

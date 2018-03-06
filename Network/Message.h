@@ -37,7 +37,7 @@ public:
 	WORD Length() const { return HEADER_LEN + BodyLen(); }
 
 	bool Serialize(::google::protobuf::Message& msg);
-	bool Deserialize(::google::protobuf::Message& msg);
+	bool Deserialize(::google::protobuf::Message* msg);
 
 private:
 	char m_data[MAX_LENGTH];

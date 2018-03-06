@@ -4,6 +4,7 @@
 #include "IOThreadM.h"
 #include "Connection.h"
 #include "ConnectionM.h"
+#include "message.pb.h"
 
 #define REMOTE_PORT 10001
 #define REMOTE_IP "192.168.99.32"
@@ -17,7 +18,9 @@ enum OpCode
 void InitMsg()
 {
 	DefineMsgHandle(OP_PRINT, [](Connection& conn, Message& msg) {
-		printf("client get msg OP_PRINT\n");
+		Msg::Test proto;
+		msg.Deserialize(&proto);
+		printf("client get msg OP_PRINT : %s\n",proto.msg().c_str());
 		return true;
 	});
 }
@@ -32,7 +35,12 @@ int main(int argc, char** argv)
 	Sleep(5 * 1000);
 
 	Connection* conn = ConnectionM::GetInstance().GetConnection(REMOTE_IP);
-	conn->SendMsg(Message(OP_PRINT));
+
+	Msg::Test proto;
+	proto.set_msg("Hello World!");
+	Message send(OP_PRINT, &proto);
+	conn->SendMsg(send);
+
 	printf("Client ProcessMsg\n");
 	while (1)
 	{

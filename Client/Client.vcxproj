@@ -74,9 +74,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../Framework;../Network;../Share;../Protobuff-3-5-0/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Framework;../Network;../Share;../Protobuff-3-5-0/bin/Protobuf;../Protobuff-3-5-0/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
@@ -125,6 +125,9 @@
     </ProjectReference>
     <ProjectReference Include="..\Network\Network.vcxproj">
       <Project>{ccbdfc7e-9a3a-41f4-ba8d-ee897b83963b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Protobuff-3-5-0\bin\Protobuf\Protobuf.vcxproj">
+      <Project>{3f1dd90f-abd8-45f0-b023-ca62c6cae995}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Share\Share.vcxproj">
       <Project>{24c6ca4d-9534-414f-a590-1b47d4343f3e}</Project>
