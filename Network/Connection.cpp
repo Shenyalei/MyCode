@@ -3,6 +3,7 @@
 #include "Common.h"
 #include "Connection.h"
 #include "IOThreadM.h"
+#include "ConnectionM.h"
 
 
 #define RECV_MSG_QUEUE_SIZE 255
@@ -19,6 +20,7 @@ Connection::Connection(SOCKET _socket) :m_sendQueue(SEND_MSG_QUEUE_SIZE)
 	m_sendPos = 0;
 	m_recvMsg = new Message();
 	m_recvPos = 0;
+	m_Close = 0;
 	m_sendAction = new SendAction(this);
 	m_recvAction = new RecvAction(this);
 	PostRecv();
@@ -84,7 +86,7 @@ void Connection::PostSend()
 		if (WSAGetLastError() != ERROR_IO_PENDING)
 		{
 			printf("Socket:%llu WSASend Error:%d\n", m_socket,WSAGetLastError());
-			Close();
+			m_sendAction->OnFail();
 		}
 	}
 }
@@ -101,7 +103,7 @@ void Connection::PostRecv()
 		if (WSAGetLastError() != ERROR_IO_PENDING)
 		{
 			printf("Socket:%llu WSARecv Error:%d\n", m_socket,WSAGetLastError());
-			Close();
+			m_recvAction->OnFail();
 		}
 	}
 }
@@ -137,6 +139,11 @@ void Connection::OnRecv(int num)
 
 void Connection::Close()
 {
-	printf("Socket:%llu IP:%s Port:%d Connection Closed\n", m_socket,m_ip.c_str(),m_port);
+	//发送事件和接受事件都关闭的情况下才能删除连接
+	if (InterlockedIncrement(&m_Close) == 2)
+	{
+		closesocket(m_socket);
+		ConnectionM::GetInstance().RemoveConnection(m_socket);
+	}
 }
 

@@ -10,6 +10,7 @@ public:
 	virtual ~ActionBase() {};
 	virtual void Init();
 	virtual bool OnComplete(DWORD num) = 0;
+	virtual void OnFail() = 0;
 };
 
 class AcceptAction :public ActionBase
@@ -18,6 +19,7 @@ public:
 	AcceptAction();
 	void Init() override;
 	bool OnComplete(DWORD num) override;
+	void OnFail() override {};
 	SOCKET acceptSocket;
 	char buf[64];//for local address,remote address
 };
@@ -28,6 +30,7 @@ public:
 	ConnectAction(SOCKET socket);
 	~ConnectAction() override;
 	bool OnComplete(DWORD num) override;
+	void OnFail() override {};
 	SOCKET connSocket;
 };
 
@@ -36,6 +39,7 @@ class RecvAction :public ActionBase
 public:
 	RecvAction(Connection* _conn) :conn(_conn) {}
 	bool OnComplete(DWORD num) override;
+	void OnFail() override;
 	Connection* conn;
 };
 
@@ -44,6 +48,7 @@ class SendAction :public ActionBase
 public:
 	SendAction(Connection* _conn) :conn(_conn) {}
 	bool OnComplete(DWORD num) override;
+	void OnFail() override;
 	Connection* conn;
 };
 

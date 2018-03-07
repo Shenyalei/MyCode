@@ -16,15 +16,15 @@ ConnectionM::~ConnectionM()
 {
 }
 
-void ConnectionM::AddConnection(SOCKET socket)
+bool ConnectionM::AddConnection(SOCKET socket)
 {
 	static std::mutex add_conn_mutex;
 	std::lock_guard<std::mutex> guard(add_conn_mutex);
 
 	if (m_data.find(socket) != m_data.end())
 	{
-		printf("duplicate socket %d\n");
-		return;
+		printf("duplicate socket %d\n",socket);
+		return false;
 	}
 	Connection* pconn = new Connection(socket);
 	 m_data[socket]= pconn;
@@ -54,7 +54,22 @@ void ConnectionM::AddConnection(SOCKET socket)
 		printf("WSAIoclt KeepAlive Error:%d\n", WSAGetLastError());
 	}
 
-	printf("Add Connection success! Peer IP:%s,Port:%d\n", conn.m_ip.c_str(), conn.m_port);
+	printf("Add Connection success! Peer IP:%s,Port:%d ConnectionNum:%d\n", conn.m_ip.c_str(), conn.m_port,m_data.size());
+	return true;
+}
+
+bool ConnectionM::RemoveConnection(SOCKET socket)
+{
+	static std::mutex remove_conn_mutex;
+	std::lock_guard<std::mutex> guard(remove_conn_mutex);
+	Connection* conn = GetConnection(socket);
+	if (!conn)
+		return false;
+	m_ipToSocket.erase(conn->m_ip);
+	m_data.erase(socket);
+	printf("Socket:%llu IP:%s Port:%d Connection Closed ConnectionNum:%d\n", socket, conn->m_ip.c_str(), conn->m_port, m_data.size());
+	delete conn;
+	return true;
 }
 
 Connection* ConnectionM::GetConnection(SOCKET socket)

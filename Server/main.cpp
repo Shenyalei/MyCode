@@ -12,15 +12,19 @@
 enum OpCode
 {
 	OP_NONE = 0,
-	OP_PRINT = 1,
+	OP_CLIENT_SERVER = 1,
+	OP_SERVER_CLIENT = 2,
 };
 
 void InitMsg()
 {
-	DefineMsgHandle(OP_PRINT, [](Connection& conn, Message& msg) {
+	DefineMsgHandle(OP_CLIENT_SERVER, [](Connection& conn, Message& msg) {
 		Msg::Test proto;
 		msg.Deserialize(&proto);
-		printf("client get msg OP_PRINT : %s\n", proto.msg().c_str());
+		printf("client(%s:%d) get msg OP_CLIENT_SERVER : %s\n",conn.m_ip.c_str(),conn.m_port, proto.msg().c_str());
+		proto.set_msg("server response");
+		Message send(OP_SERVER_CLIENT, &proto);
+		conn.SendMsg(send);
 		return true;
 	});
 }

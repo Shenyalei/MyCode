@@ -69,10 +69,22 @@ bool SendAction::OnComplete(DWORD num)
 	return true;
 }
 
+void SendAction::OnFail()
+{
+	InterlockedIncrement(&conn->m_Close);
+	conn->Close();
+}
+
 bool RecvAction::OnComplete(DWORD num)
 {
 	conn->OnRecv(num);
 	return true;
+}
+
+void RecvAction::OnFail()
+{
+	InterlockedIncrement(&conn->m_Close);
+	conn->Close();
 }
 
 IOThreadM::IOThreadM()
@@ -108,7 +120,10 @@ bool IOThreadM::Start()
 					if (ret)
 						((ActionBase*)lpOverlapped)->OnComplete(numOfBytes);
 					else
+					{
 						printf("GetQueuedCompletionStatus Fail Error:%d\n", WSAGetLastError());
+						((ActionBase*)lpOverlapped)->OnFail();
+					}
 				}
 			}
 		}));

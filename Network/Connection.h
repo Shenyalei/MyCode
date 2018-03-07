@@ -37,6 +37,7 @@ public:
 
 	std::string m_ip;
 	WORD m_port;
+	volatile long m_Close;
 private:
 	static std::mutex m_recvQueueMutex;
 	static RingBuffer<MsgEvent> m_recvQueue;

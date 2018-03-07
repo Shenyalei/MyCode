@@ -7,7 +7,8 @@ class ConnectionM : public Singleton<ConnectionM>
 public:
 	ConnectionM();
 	~ConnectionM();
-	void AddConnection(SOCKET socket);
+	bool AddConnection(SOCKET socket);
+	bool RemoveConnection(SOCKET socket);
 	Connection* GetConnection(SOCKET socket);
 	Connection* GetConnection(const std::string& ip);
 private:
