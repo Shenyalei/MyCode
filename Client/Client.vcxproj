@@ -76,9 +76,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../Framework;../Network;../Share;../Protobuff-3-5-0/bin/Protobuf;../Protobuff-3-5-0/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../Thirdparty/include;../Framework;../Network;../Share;../Protobuff/Imp</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>../Thirdparty/lib/debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobufd.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -108,12 +112,16 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>../Thirdparty/include;../Framework;../Network;../Share;../Protobuff/Imp</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>../Thirdparty/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -126,7 +134,7 @@
     <ProjectReference Include="..\Network\Network.vcxproj">
       <Project>{ccbdfc7e-9a3a-41f4-ba8d-ee897b83963b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Protobuff-3-5-0\bin\Protobuf\Protobuf.vcxproj">
+    <ProjectReference Include="..\Protobuff\Protobuf.vcxproj">
       <Project>{3f1dd90f-abd8-45f0-b023-ca62c6cae995}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Share\Share.vcxproj">

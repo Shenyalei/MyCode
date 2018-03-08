@@ -5,6 +5,7 @@
 #include "Connection.h"
 #include "ConnectionM.h"
 #include "message.pb.h"
+#include "cpp_redis/cpp_redis"
 
 #define LOCAL_IP "0.0.0.0"
 #define LISTEN_PORT 10001

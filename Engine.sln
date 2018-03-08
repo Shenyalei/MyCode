@@ -17,10 +17,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Fram
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{954773D2-1EF5-4A14-B4C1-FB6B10F3747A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3F1DD90F-ABD8-45F0-B023-CA62C6CAE995} = {3F1DD90F-ABD8-45F0-B023-CA62C6CAE995}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{609EA4D4-CD24-400D-8010-F9D0428C077E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Protobuf", "Protobuff-3-5-0\bin\Protobuf\Protobuf.vcxproj", "{3F1DD90F-ABD8-45F0-B023-CA62C6CAE995}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Protobuf", "Protobuff\Protobuf.vcxproj", "{3F1DD90F-ABD8-45F0-B023-CA62C6CAE995}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
