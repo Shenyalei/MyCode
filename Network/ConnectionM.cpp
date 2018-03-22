@@ -3,6 +3,7 @@
 
 #include "Common.h"
 #include "ConnectionM.h"
+#include "NetworkEvent.h"
 
 #define KEEPALIVE_INTERVAL 1000
 #define KEEPALIVE_TIME 18000
@@ -27,7 +28,7 @@ bool ConnectionM::AddConnection(SOCKET socket)
 		return false;
 	}
 	Connection* pconn = new Connection(socket);
-	 m_data[socket]= pconn;
+	m_data[socket]= pconn;
 
 	//get peer ip and port
 	Connection& conn = *m_data[socket];
@@ -53,7 +54,15 @@ bool ConnectionM::AddConnection(SOCKET socket)
 	{
 		printf("WSAIoclt KeepAlive Error:%d\n", WSAGetLastError());
 	}
+	// tcp_nodelay
+	bool nodelay = true;
+	if (SOCKET_ERROR == setsockopt(socket, IPPROTO_TCP, TCP_NODELAY, (char*)&nodelay, sizeof(nodelay)))
+	{
+		printf("setsockopt TCP_NODELAY Error:%d\n", WSAGetLastError());
+	}
 
+	Message send(NE_ADD_CONNECTION);
+	conn.RecvMsg(&send);
 	printf("Add Connection success! Peer IP:%s,Port:%d ConnectionNum:%d\n", conn.m_ip.c_str(), conn.m_port,m_data.size());
 	return true;
 }

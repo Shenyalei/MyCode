@@ -13,8 +13,8 @@
 enum OpCode
 {
 	OP_NONE = 0,
-	OP_CLIENT_SERVER = 1,
-	OP_SERVER_CLIENT = 2,
+	OP_CLIENT_SERVER,
+	OP_SERVER_CLIENT,
 };
 
 void InitMsg()
@@ -33,10 +33,22 @@ void InitMsg()
 int main(int argc, char** argv)
 {
 	printf("Start Server:\n");
+
+	//network io
 	InitMsg();
 	IOThreadM::GetInstance().Start();
 	IOThreadM::GetInstance().Listen(LOCAL_IP, LISTEN_PORT);
 
+	//redis client
+	cpp_redis::client client;
+	client.connect();
+	client.set("hello", "42");
+	client.get("hello", [](cpp_redis::reply& reply) {
+		std::cout << "redis reply:" << reply << std::endl;
+	});
+	client.sync_commit();
+
+	//logic
 	printf("Server ProcessMsg\n");
 	while (1)
 	{

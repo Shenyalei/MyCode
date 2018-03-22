@@ -9,11 +9,13 @@
 #include <thread>
 #include <unordered_map>
 #include <mutex>
+#include <atomic>
+#include <algorithm>
 
 //项目文件
 #include "Define.h"
 #include "Singleton.h"
-
+#include "Utils.h"
 
 //windows
 #include <windows.h>

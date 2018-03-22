@@ -121,6 +121,7 @@
     <ClInclude Include="HRTimer.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="Singleton.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HRTimer.cpp" />

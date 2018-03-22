@@ -12,8 +12,8 @@
 enum OpCode
 {
 	OP_NONE = 0,
-	OP_CLIENT_SERVER = 1,
-	OP_SERVER_CLIENT = 2,
+	OP_CLIENT_SERVER ,
+	OP_SERVER_CLIENT ,
 };
 
 void InitMsg()
@@ -36,14 +36,6 @@ int main(int argc, char** argv)
 	InitMsg();
 
 	IOThreadM::GetInstance().Connect(REMOTE_IP, REMOTE_PORT);
-	Sleep(5 * 1000);
-
-	Connection* conn = ConnectionM::GetInstance().GetConnection(REMOTE_IP);
-
-	Msg::Test proto;
-	proto.set_msg("Hello World!");
-	Message send(OP_CLIENT_SERVER, &proto);
-	conn->SendMsg(send);
 
 	printf("Client ProcessMsg\n");
 	while (1)

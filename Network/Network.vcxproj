@@ -155,6 +155,7 @@
     <ClInclude Include="IOThreadM.h" />
     <ClInclude Include="Message.h" />
     <ClInclude Include="ConnectionM.h" />
+    <ClInclude Include="NetworkEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Connection.cpp" />

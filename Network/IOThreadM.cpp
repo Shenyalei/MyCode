@@ -71,7 +71,7 @@ bool SendAction::OnComplete(DWORD num)
 
 void SendAction::OnFail()
 {
-	InterlockedIncrement(&conn->m_Close);
+	conn->m_closeSend = true;
 	conn->Close();
 }
 
@@ -83,7 +83,7 @@ bool RecvAction::OnComplete(DWORD num)
 
 void RecvAction::OnFail()
 {
-	InterlockedIncrement(&conn->m_Close);
+	conn->m_closeRecv = true;
 	conn->Close();
 }
 

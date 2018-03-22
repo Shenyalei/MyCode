@@ -15,12 +15,14 @@ RingBuffer<Connection::MsgEvent> Connection::m_recvQueue(SEND_MSG_QUEUE_SIZE);
 Connection::Connection(SOCKET _socket) :m_sendQueue(SEND_MSG_QUEUE_SIZE)
 {
 	m_port = 0;
+	m_close = false;
+	m_closeRecv = false;
+	m_closeSend = false;
 	m_socket = _socket;
 	m_sendMsg = nullptr;
 	m_sendPos = 0;
 	m_recvMsg = new Message();
 	m_recvPos = 0;
-	m_Close = 0;
 	m_sendAction = new SendAction(this);
 	m_recvAction = new RecvAction(this);
 	PostRecv();
@@ -140,10 +142,12 @@ void Connection::OnRecv(int num)
 void Connection::Close()
 {
 	//发送事件和接受事件都关闭的情况下才能删除连接
-	if (InterlockedIncrement(&m_Close) == 2)
+	if (m_closeSend && m_closeRecv)
 	{
-		closesocket(m_socket);
+		m_close = true;
 		ConnectionM::GetInstance().RemoveConnection(m_socket);
+		closesocket(m_socket);
+		m_socket = INVALID_SOCKET;
 	}
 }
 
