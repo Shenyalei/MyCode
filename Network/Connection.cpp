@@ -145,9 +145,9 @@ void Connection::Close()
 	if (m_closeSend && m_closeRecv)
 	{
 		m_close = true;
-		ConnectionM::GetInstance().RemoveConnection(m_socket);
 		closesocket(m_socket);
 		m_socket = INVALID_SOCKET;
+		ConnectionM::GetInstance().RemoveConnection(m_socket);
 	}
 }
 

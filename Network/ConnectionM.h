@@ -9,10 +9,10 @@ public:
 	~ConnectionM();
 	bool AddConnection(SOCKET socket);
 	bool RemoveConnection(SOCKET socket);
-	Connection* GetConnection(SOCKET socket);
-	Connection* GetConnection(const std::string& ip);
+	std::shared_ptr<Connection> GetConnection(SOCKET socket);
+	std::shared_ptr<Connection> GetConnection(const std::string& ip);
 private:
-	std::map<SOCKET, Connection*> m_data;
+	std::map<SOCKET, std::shared_ptr<Connection>> m_data;
 	std::unordered_map<std::string, SOCKET> m_ipToSocket;
 };
 

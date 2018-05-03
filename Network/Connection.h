@@ -7,12 +7,12 @@
 class SendAction;
 class RecvAction;
 
-class Connection
+class Connection : public std::enable_shared_from_this<Connection>
 {
 public:
 	struct MsgEvent
 	{
-		Connection* conn = nullptr;
+		std::shared_ptr<Connection> conn;
 		Message* msg = nullptr;
 	};
 	Connection(const Connection&) = delete;

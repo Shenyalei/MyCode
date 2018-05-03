@@ -27,7 +27,7 @@ bool ConnectionM::AddConnection(SOCKET socket)
 		printf("duplicate socket %d\n",socket);
 		return false;
 	}
-	Connection* pconn = new Connection(socket);
+	auto pconn = std::make_shared<Connection>(socket);
 	m_data[socket]= pconn;
 
 	//get peer ip and port
@@ -71,7 +71,7 @@ bool ConnectionM::RemoveConnection(SOCKET socket)
 {
 	static std::mutex remove_conn_mutex;
 	std::lock_guard<std::mutex> guard(remove_conn_mutex);
-	Connection* conn = GetConnection(socket);
+	auto conn = GetConnection(socket);
 	if (!conn)
 		return false;
 	m_ipToSocket.erase(conn->m_ip);
@@ -81,15 +81,15 @@ bool ConnectionM::RemoveConnection(SOCKET socket)
 	return true;
 }
 
-Connection* ConnectionM::GetConnection(SOCKET socket)
+std::shared_ptr<Connection> ConnectionM::GetConnection(SOCKET socket)
 {
 	auto it = m_data.find(socket);
 	if (it == m_data.end())
-		return nullptr;
+		return std::shared_ptr<Connection>();
 	return it->second;
 }
 
-Connection* ConnectionM::GetConnection(const std::string& ip)
+std::shared_ptr<Connection> ConnectionM::GetConnection(const std::string& ip)
 {
 	auto it = m_ipToSocket.find(ip);
 	if (it == m_ipToSocket.end())
