@@ -195,7 +195,7 @@ bool RingBuffer2<T>::pop(T& data)
 			return false;
 		}
 	} while (!mReadCnt.compare_exchange_strong(out,out + 1))
-		data = mData[out&(mCapacity - 1)];
+	data = mData[out&(mCapacity - 1)];
 	return true;
 }
 

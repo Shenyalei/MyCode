@@ -53,7 +53,7 @@ void Connection::SendMsg(const Message& msg)
 void Connection::RecvMsg(Message* msg)
 {
 	std::lock_guard<std::mutex> guard(m_recvQueueMutex);
-	MsgEvent event{this, msg};
+	MsgEvent event{ std::shared_ptr<Connection>(this), msg};
 	if (!m_recvQueue.push(event))
 	{
 		printf("m_recvQueue full\n");

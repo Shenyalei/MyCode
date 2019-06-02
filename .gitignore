@@ -46,3 +46,8 @@ Framework/x64/
 Network/x64/
 Share/x64/
 x64/
+*.log
+*.tlog
+*.idb
+*.pdb
+*.txt

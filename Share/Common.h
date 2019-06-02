@@ -11,6 +11,7 @@
 #include <mutex>
 #include <atomic>
 #include <algorithm>
+#include <functional>
 
 //项目文件
 #include "Define.h"

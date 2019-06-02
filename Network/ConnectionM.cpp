@@ -77,7 +77,7 @@ bool ConnectionM::RemoveConnection(SOCKET socket)
 	m_ipToSocket.erase(conn->m_ip);
 	m_data.erase(socket);
 	printf("Socket:%llu IP:%s Port:%d Connection Closed ConnectionNum:%d\n", socket, conn->m_ip.c_str(), conn->m_port, m_data.size());
-	delete conn;
+	//delete conn;
 	return true;
 }
 
